@@ -244,6 +244,8 @@ Seventh, provide your (hopefully ready) ACM certificate. If you don't have one, 
 
 Finally, create the distribution.
 
+**Note:** It's also a good idea to add the index file name so that the distribution which is the default root object.
+
 ### Pointing Route 53 to the CloudFront distribution
 
 Go to Route 53 and look for your hosted zone where your domain records live. Edit the record that points to the S3 bucket and change the _Route traffic to_ section to **Alias to CloudFront distribution**.
@@ -275,3 +277,24 @@ To enable this, go to the origin settings of the CloudFront distribution and cha
 Select _OAI_ under the **Origin access** section and create a new OAI. Next, allow AWS to automatically update the bucket's policies and save.
 
 If it fails, check the bucket's policy and change it yourself. Make sure to use the correct OAI id, not the distribution id.
+
+## Securing the S3 Bucket
+
+Finally, you can turn off the bucket's static website hosting and lock it down (block all public access). CloudFront is now the only one with access to get what's inside the bucket and it will handle all of the requests to the page.
+
+## CloudFront Routing
+
+You can provide a custom error page to your CloudFront distribution if the user ever does something unexpected, like trying to reach a page that doesn't exist.
+
+Go to your distribution, click on the _Error pages_ tab and create a custom error response.
+
+Select the error code (usually 404 when user hits an inexistent page), and you can decide if you want to customize error response or not.
+
+You can also create a custom error response for 403 (Unauthorized) to instead show a 404 error. Since we already established that 404 errors will show the index page instead, this then triggers the client side routing. If the route you specified exists in thw website, it will first try to go to the S3 bucket and get an Access Denied, which is a 403 and then be redirected as a 404 and then be redirected to the index page again, which will then use client side routing.
+
+## Create Custom Cache Policies
+
+CloudFront caches everything so that the users don't wait a lot of time for the page to load. But when you deploy a new version, you want that new version to be cached so users can reach it. There are essentially two ways to do it:
+
+1. Update the dafault behavior or create a new one for your index page and edit the time the page remains cached. By default, CloudFront caches a new version every 24 hours, but you can decrease it to minutes.
+2. Create an invalidation and set it to all paths using a wildcard (`/*`). This can be used via a CI pipeline to invalidate all cache when there is a new deploy.
