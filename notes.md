@@ -297,4 +297,6 @@ You can also create a custom error response for 403 (Unauthorized) to instead sh
 CloudFront caches everything so that the users don't wait a lot of time for the page to load. But when you deploy a new version, you want that new version to be cached so users can reach it. There are essentially two ways to do it:
 
 1. Update the dafault behavior or create a new one for your index page and edit the time the page remains cached. By default, CloudFront caches a new version every 24 hours, but you can decrease it to minutes.
-2. Create an invalidation and set it to all paths using a wildcard (`/*`). This can be used via a CI pipeline to invalidate all cache when there is a new deploy.
+2. Create an invalidation (by going to Invalidations tab in the distribution) and set it to all paths using a wildcard (`/*`). This can be used via a CI pipeline to invalidate all cache when there is a new deploy. In the meantime, the only way to deploy is by directly copying into the S3 bucket.
+
+Keep in mind. You can have up to 1000 invalidations for free. Then it costs fractions of a cent.
